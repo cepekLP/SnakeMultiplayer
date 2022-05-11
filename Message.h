@@ -1,6 +1,6 @@
 #define MAX_LENGTH 20
 
-typedef struct{
+typedef struct __attribute__((__packed__)){
     float x;
     float y;
 
