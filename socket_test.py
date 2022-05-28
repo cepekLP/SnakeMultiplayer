@@ -1,6 +1,6 @@
 import socket
 import struct
-
+import random
 #import numpy as np
 
 HOST = "127.0.0.1"  # The server's hostname or IP address
@@ -24,8 +24,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
      #   lst[i] = text[i]
     #for i in range(len(bina))
       #  print(bina[i])
-    s.sendall(struct.pack("ff256s", 12.0, 13.0, bytes(text, "ascii")))  
-    #  s.sendall(struct.pack("ffp", 12.0, 13.0, bytes(text, "ascii")))
-    #data = data.dec
-
+    s.sendall(struct.pack("ff256s", random.uniform(1, 13), 13.0, bytes(text, "ascii")))  
+    while True:
+      
 #print(f"Received {data!r}")
