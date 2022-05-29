@@ -3,7 +3,7 @@ from snake import *
 
 class Game:
 	def __init__(self):
-		self.snake = Snake(
+		self.player_snake = Snake(
 			random.choice(list(Direction)),
 			Point(
 				random.randrange(5 * BLOCK_SIZE, WINDOW_X - 6 * BLOCK_SIZE, BLOCK_SIZE),
@@ -63,9 +63,9 @@ class Game:
 				pygame.draw.rect(
 					self.game_window, snake.color,
 					pygame.Rect(block.x, block.y, BLOCK_SIZE, BLOCK_SIZE))
-		for block in self.snake.body:
+		for block in self.player_snake.body:
 			pygame.draw.rect(
-				self.game_window, self.snake.color,
+				self.game_window, self.player_snake.color,
 				pygame.Rect(block.x, block.y, BLOCK_SIZE, BLOCK_SIZE))
 
 		pygame.draw.rect(
@@ -76,7 +76,7 @@ class Game:
 		pygame.display.update()
 
 	def collisions(self):
-		if self.snake.apple_collision(self.apple_position):
+		if self.player_snake.apple_collision(self.apple_position):
 			self.score += 10
 			self.apple_spawned = False
 		for snake in self.snakes:
@@ -85,15 +85,15 @@ class Game:
 
 		if not self.apple_spawned:
 			self.apple_position = Point(
-				random.randrange(0, WINDOW_X - APPLE_SIZE, APPLE_SIZE),
-				random.randrange(0, WINDOW_Y - APPLE_SIZE, APPLE_SIZE))
+				random.randrange(0, WINDOW_X - APPLE_SIZE, BLOCK_SIZE),
+				random.randrange(0, WINDOW_Y - APPLE_SIZE, BLOCK_SIZE))
 		self.apple_spawned = True
 
-		self.snake.snake_collision(self.snake)
-		self.snake.wall_collision()
+		self.player_snake.snake_collision(self.player_snake)
+		self.player_snake.wall_collision()
 		for snake in self.snakes:
-			self.snake.snake_collision(snake)
-			snake.snake_collision(self.snake)
+			self.player_snake.snake_collision(snake)
+			snake.snake_collision(self.player_snake)
 
 		for snake in self.snakes:
 			for coll_snake in self.snakes:
@@ -105,7 +105,7 @@ class Game:
 				self.snakes.remove(snake)
 
 	def move(self):
-		self.snake.player_move()
+		self.player_snake.player_move()
 		for snake in self.snakes:
 			snake.random_move()
 
@@ -115,7 +115,7 @@ class Game:
 			self.move()
 			self.fps.tick(FPS)
 			self.collisions()
-			if not self.snake.alive:
+			if not self.player_snake.alive:
 				break
 		self.game_over()
 
