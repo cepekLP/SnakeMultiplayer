@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include "Message.h"
+#include "GameValidation.h"
 
 char* commands[] = 
 {
