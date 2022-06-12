@@ -5,8 +5,8 @@
 
 typedef enum {
     UP,
-    DOWN,
     LEFT,
+    DOWN,
     RIGHT
 }direction_t;
 
@@ -32,8 +32,9 @@ typedef struct {
 
 typedef struct{
 	unsigned int player_number;
-    int active_players;
-    player_data_t* players;
+    unsigned int active_players;
+    int start_counter;
+    player_data_t players[MAX_PLAYER_NUMBER];
 
 }game_state_t;
 

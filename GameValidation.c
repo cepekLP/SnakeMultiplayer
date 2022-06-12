@@ -2,30 +2,22 @@
 
 void collision_check(player_data_t* player, player_data_t players[], game_state_t* game_state)
 {
-    if(wall_hit(player) == 1)
+    if(player->flags & IS_ALIVE == IS_ALIVE)
     {
-        player->flags &= ~IS_ALIVE; 
-    }
-    else
-    {
-        for(int i =0;i < game_state->player_number; i++)
+        if(wall_hit(player) == 1)
         {
-            if(players[i].flags & IS_ALIVE == IS_ALIVE)
-            {
-                for(int j = 0 ;j < players[i].length; j++)
-                {
-                    if( do_overlap( players[i].position[j], 
-                                    (point_t) {players[i].position[j].x +SNAKE_BLOCK_SIZE, players[i].position[j].y +SNAKE_BLOCK_SIZE},
-                                    player->position[0],
-                                    (point_t) {player->position[0].x +SNAKE_BLOCK_SIZE, player->position[0].y +SNAKE_BLOCK_SIZE} ) == 1)
-                    {
-                        player->flags &= ~IS_ALIVE; 
-                    }
-                }
-*-
-            }
+            player->flags &= ~IS_ALIVE; 
+        }
+        else if(self_collision(player) == 1)
+        {
+            player->flags &= ~IS_ALIVE; 
+        }
+        else if(others_players_hit(player, players, game_state->player_number) == 1)
+        {
+            player->flags &= ~IS_ALIVE;
         }
     }
+    
 }
 
 int wall_hit(player_data_t* player)
@@ -44,19 +36,44 @@ int wall_hit(player_data_t* player)
     }
 }
 
-int do_overlap(point_t l1, point_t l2, point_t r1, point_t r2)
+int self_collision(player_data_t* player)
 {
-    // If one rectangle is on left side of other
-    if (l1.x > r2.x || l2.x > r1.x)
+    for(int i = 1; i < player->length; i++)
     {
-           return 0;
+        if(do_overlap(player->position[0], player->position[i]))
+        {
+            return 1;
+        }
     }
 
-    // If one rectangle is above other
-    if (r1.y > l2.y || r2.y > l1.y)
+    return 0;
+}
+
+int do_overlap(point_t point1, point_t point2)
+{
+    if(point1.x == point2.x && point1.y == point2.y)
     {
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
+}
+
+int others_players_hit(player_data_t* player, player_data_t players[], int players_nr)
+{
+    for(int i = 0; i < players_nr; i++)
+    {
+        if(players[i].flags & IS_ALIVE == IS_ALIVE && player != &players[i])
+        {
+            for(int j = 0 ;j < players[i].length; j++)
+            {
+                if( do_overlap(player->position[0], players[i].position[j]) == 1)
+                {
+                    return 1;
+                }
+            }
+        }
+    }
+
+    return 0;
 }
