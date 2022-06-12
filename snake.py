@@ -25,6 +25,16 @@ class Snake:
 		if new_direction == Direction.Right and self.direction != Direction.Left:
 			self.direction = Direction.Right
 
+	def move(self):
+		if self.direction == Direction.Up:
+			self.position.y -= BLOCK_SIZE
+		if self.direction == Direction.Down:
+			self.position.y += BLOCK_SIZE
+		if self.direction == Direction.Left:
+			self.position.x -= BLOCK_SIZE
+		if self.direction == Direction.Right:
+			self.position.x += BLOCK_SIZE
+
 	def player_move(self):
 		new_direction = self.direction
 		for event in pygame.event.get():
@@ -66,16 +76,6 @@ class Snake:
 			self.alive = False
 		if self.position.y < 0 or self.position.y > WINDOW_Y - BLOCK_SIZE:
 			self.alive = False
-
-	def move(self):
-		if self.direction == Direction.Up:
-			self.position.y -= BLOCK_SIZE
-		if self.direction == Direction.Down:
-			self.position.y += BLOCK_SIZE
-		if self.direction == Direction.Left:
-			self.position.x -= BLOCK_SIZE
-		if self.direction == Direction.Right:
-			self.position.x += BLOCK_SIZE
 
 	def apple_collision(self, apple_position):
 		self.body.insert(0, Point(self.position.x, self.position.y))

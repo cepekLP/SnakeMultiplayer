@@ -2,6 +2,14 @@ from enum import IntEnum
 import pygame
 import random
 
+FPS = 30
+WINDOW_X = 800
+WINDOW_Y = 600
+
+BLOCK_SIZE = 5
+APPLE_SIZE = 15
+START_SNAKE_BLOCKS_NR = 20
+
 
 class Point:
 	def __init__(self, x, y):
@@ -15,14 +23,6 @@ class Direction(IntEnum):
 	Down = 2
 	Right = 3
 
-
-FPS = 30
-WINDOW_X = 800
-WINDOW_Y = 600
-
-BLOCK_SIZE = 5
-APPLE_SIZE = 15
-START_SNAKE_BLOCKS_NR = 20
 
 pygame.init()
 random.seed()
