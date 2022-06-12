@@ -11,8 +11,8 @@ class Game:
 			SNAKE_COLOR
 		)
 		self.snakes = [
-			Snake(random.choice(
-				list(Direction)), Point(
+			Snake(
+				random.choice(list(Direction)), Point(
 					random.randrange(5 * BLOCK_SIZE, WINDOW_X - 6 * BLOCK_SIZE, BLOCK_SIZE),
 					random.randrange(5 * BLOCK_SIZE, WINDOW_Y - 6 * BLOCK_SIZE, BLOCK_SIZE)),
 				SNAKES_COLORS[0]),
