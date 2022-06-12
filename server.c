@@ -6,8 +6,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
 #include "Message.h"
 
+char* commands[] = 
+{
+	"status",
+	"pingcrc"
+};
 
 void* connection_handler(void *socket_desc) {
 	
@@ -15,46 +22,44 @@ void* connection_handler(void *socket_desc) {
 	int sock = * (int *)socket_desc;
 	int read_size;
 	char *message , client_message[2000];
+	pid_t clientTid = syscall(SYS_gettid);
 	 
-	printf("\n ----- NEW CLIENT OPENED ----- \n");
-	//write(sock , message , strlen(message));
-
-	/* Send test struct */
-	// Message* test_struct_message = malloc(sizeof(Message));
-	// test_struct_message->x = 1.0;
-	// test_struct_message->y = 2.0;
-	// strcpy(test_struct_message->message, "Sent");
-	// write(sock, test_struct_message, sizeof(Message));
-	
-	// /* Send modified test struct */
-	// strcpy(test_struct_message->message, "Sent sdfgs dfg");
-	// write(sock, test_struct_message, sizeof(Message));
-	
-	// /* Send modified test struct 2 */
-	// strcpy(test_struct_message->message, "Sen asdfasd dsaf asdf asdf asdf t");
-	// write(sock, test_struct_message, sizeof(Message));
-	// memset(test_struct_message, 0, sizeof(Message));
-
+	printf("\n ----- NEW CLIENT OPENED ID: %d ----- \n", clientTid);
+	memset(client_message, 0, 2000);
 	// free(test_struct_message);
 	Message* received_test_struct = malloc(sizeof(Message));
-	do {
-		//read_size = recv(sock , client_message , 2000 , 0);
-		
-		/* To dodałem */
-		printf("Waiting for message\n");
-		read_size = recv(sock, received_test_struct, sizeof(Message), 0);
-		printf("Message read\n");
-		printf("{ %f %f %s }", received_test_struct->x, received_test_struct->y, received_test_struct->message);
-		printf("\n");
-		for (int i =0; i <10;i++)
-		printf("%c", received_test_struct->message[i]);
+	ping_crc* ping_struct = malloc(sizeof(ping_crc));
 
-		printf("\n");
-		/* --------- */ 
+	do {
+
+		/* Read command part */
+		/* Exisiting commands:
+			-> status
+			-> pingcrc
+			->
+		*/
+
+		read_size = recv(sock , client_message , 20 , 0);
+
 		client_message[read_size] = '\0';
-		
-		/* Send the message back to client */
-		//write(sock , client_message , strlen(client_message));
+		printf("\n[ %d -> %s ]\n", read_size, client_message);
+
+		if(strcmp(client_message, commands[0]) == 0)
+		{
+			printf("Waiting for message\n");
+			read_size = recv(sock, received_test_struct, sizeof(Message), 0);
+			printf("{ %f %f %s \t}", received_test_struct->x, received_test_struct->y, received_test_struct->message);
+			/* Send the message back to client */
+			//write(sock, received_test_struct, sizeof(Message));
+		}
+		//printf("%s \n%s", client_message, commands[1]);
+		if(strcmp(client_message, commands[1]) == 0)
+		{
+			read_size = recv(sock, ping_struct, sizeof(ping_crc), 0);
+			/* Send the message back to client */
+			printf("pingcrc {%d}", ping_struct->ping);
+			write(sock, ping_struct, sizeof(ping_crc));
+		}
 		
 		/* Clear the message buffer */
 		memset(client_message, 0, 2000);
@@ -86,7 +91,7 @@ int main(int argc, char *argv[]) {
 
 	for (;;) {
 		connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
-		fprintf(stderr, "Connection accepted\n"); 
+		fprintf(stderr, "\nConnection accepted\n"); 
 		pthread_create(&thread_id, NULL, connection_handler , (void *) &connfd);
 	}
 }
