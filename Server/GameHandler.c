@@ -6,6 +6,7 @@ void init_player(game_state_t* game_state)
     game_state->players[game_state->active_players].points = 0;
     game_state->players[game_state->active_players].flags = 0;
 // losowanie startu
+    
 
     game_state->active_players++;
 }

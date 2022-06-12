@@ -8,10 +8,15 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include <time.h>
+#include <semaphore.h>
+
 #include "Message.h"
 #include "GameValidation.h"
+#include "GameHandler.h"
 #include "GameState.h"
 #include "Statics.h"
+
 
 #define COMMAND_LEN 10
 
@@ -22,7 +27,9 @@ char* commands[] =
 	"game\0"
 };
 
-game_state_t GameState ={PLAYER_NUMBER, 0, NULL};
+game_state_t game_state ={PLAYER_NUMBER, 0, -1};
+sem_t general_mutex;
+sem_t mutex[MAX_PLAYER_NUMBER];
 
 void send_command(int sock, char* command)
 {
@@ -48,7 +55,13 @@ void* connection_handler(void *socket_desc)
 	// free(test_struct_message);
 	Message* received_test_struct = malloc(sizeof(Message));
 	ping_crc_t* ping_struct = malloc(sizeof(ping_crc_t));
-	player_state_t* gs = malloc(sizeof(player_state_t));
+	player_state_t* ps = malloc(sizeof(player_state_t));
+
+	sem_wait(&general_mutex);
+	int player_number = game_state.active_players;
+
+	init_player(&game_state);
+	sem_post(&general_mutex);
 
 	do {
 
@@ -62,7 +75,7 @@ void* connection_handler(void *socket_desc)
 		read_size = recv(sock , client_message , 20 , 0);
 
 		client_message[read_size] = '\0';
-		printf("\n[ %d -> %s -> %d]\n", read_size, client_message, strlen(client_message));
+		printf("\n[ %d -> %s -> %ld]\n", read_size, client_message, strlen(client_message));
 		//printf("CMP %d\n", strcmp(client_message, commands[0]));
 		if(strcmp(client_message, commands[0]) == 0)
 		{
@@ -88,21 +101,21 @@ void* connection_handler(void *socket_desc)
 		{
 			printf("[Awaiting game message]\n");
 
-			read_size = recv(sock, gs, GAME_STRUCT_SIZE, 0);
-			
-			gs->timestamp = 2137;
-			gs->length = 50;
-			gs->direction = 3;
-			for(int i=0; i < MAX_SNAKE_LENGTH; i++)
-			{
-				printf("%hd %hd\n",gs->positionX[i], gs->positionY[i]);
-				gs->positionX[i] *= 2;
-				gs->positionY[i] *= 3;
-			}
+			read_size = recv(sock, ps, GAME_STRUCT_SIZE, 0);
 
 			send_command(sock, "game\0");
+			write(sock, &game_state.active_players, sizeof(game_state.active_players));
+			for (int i =0 ;i<game_state.active_players; i++)
+			{
+				if(i != player_number)
+				{
+				sem_wait(&mutex[i]);
+				write(sock, &game_state.players[i], GAME_STRUCT_SIZE);
+				sem_post(&mutex[i]);
+				}
 
-			write(sock, gs, GAME_STRUCT_SIZE);
+			}
+			
 		}
 		
 		/* Clear the message buffer */
@@ -118,6 +131,8 @@ void* connection_handler(void *socket_desc)
 }
 
 int main(int argc, char *argv[]) {
+	srand(time(NULL));
+
 	int listenfd = 0, connfd = 0;
 	struct sockaddr_in serv_addr; 
 	
