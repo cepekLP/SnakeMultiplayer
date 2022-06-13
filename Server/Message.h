@@ -1,5 +1,5 @@
-#include "GameState.h"
-
+#pragma once
+#include "Statics.h"
 #define GAME_STRUCT_SIZE 2 * 2 * MAX_SNAKE_LENGTH + 4 + 2 + 2 + 2 + 2
 
 #define PING_STRUCT_SIZE 8

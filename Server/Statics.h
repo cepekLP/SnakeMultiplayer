@@ -9,10 +9,11 @@
 #define SNAKE_BLOCK_SIZE 5
 #define PLAYER_NUMBER 3
 
-#define MAX_PLAYER_NUMBER
+#define MAX_PLAYER_NUMBER 6
 /*  -----------flags-----------  */
 
 #define ACCELERATION    0x0001
 #define IS_ALIVE        0x0002
 #define IS_FINISHED     0x0004
 #define IS_STARTED      0x0008
+#define IS_GOING_TO_START_ 0x000C

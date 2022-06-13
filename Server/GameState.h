@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Statics.h"
+#include "Message.h"
 
 
 typedef enum {
@@ -20,7 +21,7 @@ typedef struct{
 //  0 - acceleration
 //  1 - isAlive
 //  2
-
+/*
 typedef struct {
     uint32_t timestamp;
     point_t position[MAX_SNAKE_LENGTH];
@@ -28,13 +29,13 @@ typedef struct {
     uint8_t length;
     uint16_t points;
     uint16_t flags;
-}player_data_t;
+}player_data_t;*/
 
 typedef struct{
 	unsigned int player_number;
-    unsigned int active_players;
+    u_int16_t active_players;
     int start_counter;
-    player_data_t players[MAX_PLAYER_NUMBER];
+    player_state_t players[MAX_PLAYER_NUMBER];
 
 }game_state_t;
 

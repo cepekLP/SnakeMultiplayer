@@ -1,6 +1,6 @@
 #include "GameValidation.h"
 
-void collision_check(player_data_t* player, player_data_t players[], game_state_t* game_state)
+void collision_check(player_state_t* player, player_state_t players[], game_state_t* game_state)
 {
     if(player->flags & IS_ALIVE == IS_ALIVE)
     {
@@ -20,7 +20,7 @@ void collision_check(player_data_t* player, player_data_t players[], game_state_
     
 }
 
-int wall_hit(player_data_t* player)
+int wall_hit(player_state_t* player)
 {
     if( 
         player->position[0].x + SNAKE_BLOCK_SIZE <= MAP_WIDHT &&
@@ -36,11 +36,11 @@ int wall_hit(player_data_t* player)
     }
 }
 
-int self_collision(player_data_t* player)
+int self_collision(player_state_t* player)
 {
     for(int i = 1; i < player->length; i++)
     {
-        if(do_overlap(player->position[0], player->position[i]))
+        if(do_overlap((point_t){player->positionX[0], player->positionY[0]}, (point_t){player->positionX[i], player->positionY[i]))
         {
             return 1;
         }
@@ -59,7 +59,7 @@ int do_overlap(point_t point1, point_t point2)
     return 0;
 }
 
-int others_players_hit(player_data_t* player, player_data_t players[], int players_nr)
+int others_players_hit(player_state_t* player, player_state_t players[], int players_nr)
 {
     for(int i = 0; i < players_nr; i++)
     {
