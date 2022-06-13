@@ -1,8 +1,16 @@
 from snake import *
+import struct
+from SocketHandler import SocketHandler
+import time
 
 
 class Game:
 	def __init__(self):
+
+		self.sh = SocketHandler()
+		self.sh.start()
+		self.timestamp = 0
+
 		self.player_snake = Snake(
 			random.choice(list(Direction)),
 			Point(
@@ -115,9 +123,48 @@ class Game:
 			self.move()
 			self.fps.tick(FPS)
 			self.collisions()
+
+			self.sh.sendCommand('player')
+			self.sh.sendStruct(self.pack_snake())
+			
 			if not self.player_snake.alive:
 				break
 		self.game_over()
+	
+	def pack_snake(self):
+		packed = PlayerState()
+		packed.timestamp = int(round(time.time() * 1000)) % 4000000000
+		packed.length = len(self.player_snake.body)
+		packed.direction = self.player_snake.direction
+		packed.points = self.score
+		packed.flags = 0
+		#x_list = [block.x for block in self.player_snake.body] + [0] * (MAX_SNAKE_LENGTH - len(self.player_snake.body))
+		#y_list = [block.y for block in self.player_snake.body] + [0] * (MAX_SNAKE_LENGTH - len(self.player_snake.body))
+
+		packed.position_x = array('H')
+		packed.position_y = array('H')
+
+		# for i in range(0, 50):
+		# 	if i < len(self.player_snake.body):
+		# 		packed.position_x.append(self.player_snake.body[i].x)
+		# 	else:
+		# 		packed.position_x.append(0)
+
+		# for i in range(0, 50):
+		# 	if i < len(self.player_snake.body):
+		# 		packed.position_y.append(self.player_snake.body[i].y)
+		# 	else:
+		# 		packed.position_y.append(0)
+
+		for i in range(50):
+			if i < len(self.player_snake.body):
+				packed.position_x.append(self.player_snake.body[i].x)
+				packed.position_y.append(self.player_snake.body[i].y)
+			else:
+				packed.position_x.append(0)
+				packed.position_y.append(0)
+		
+		return packed.pack()
 
 
 if __name__ == "__main__":

@@ -19,6 +19,10 @@ class SocketHandler:
     self.socketh = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.socketh.connect((self.HOST, self.PORT))
 
+  def start(self):
+    self.connect()
+    _thread.start_new_thread(self.asyncRecv,())
+
   def sendStruct(self, message):  
     self.socketh.sendall(message)
 
@@ -69,54 +73,54 @@ class SocketHandler:
         crc = struct.unpack("i", data)
         print(crc)
 
-      if command == "game":
+      if command == "player":
         print("[GAME] Unpacked")
         print(len(data))
-        gamedata = struct.unpack('IHH50H50H', data)
+        gamedata = struct.unpack('IHHHH50H50H', data)
         timestamp = gamedata[0]
         length = gamedata[1]
         direction = gamedata[2]
-        posX = gamedata[3:53]
-        posY = gamedata[53:103]
+        points = gamedata[3]
+        flags = gamedata[4]
+
+        posX = gamedata[5:55]
+        posY = gamedata[55:105]
         print(timestamp, length, direction, posX, posY)
     
     except:
       traceback.print_exc()
 
-sh = SocketHandler()
-sh.connect()
+# sh = SocketHandler()
+# sh.start()
 
-_thread.start_new_thread(sh.asyncRecv,())
+# # sh.sendCommand('status')
 
-sh.sendCommand('status')
+# # text: str = "test"
+# # while len(text)<256:
+# #   text = text + '\0'
 
+# # sh.sendStruct(struct.pack("ff256s", random.uniform(1, 13), random.uniform(1,200), bytes(text, "ascii")))
 
-text: str = "test"
-while len(text)<256:
-  text = text + '\0'
-
-sh.sendStruct(struct.pack("ff256s", random.uniform(1, 13), random.uniform(1,200), bytes(text, "ascii")))
-
-sh.sendCommand('pingcrc')
-time.sleep(0.01)
-sh.sendStruct(struct.pack("i", 69420))
+# # sh.sendCommand('pingcrc')
+# # time.sleep(0.01)
+# # sh.sendStruct(struct.pack("i", 69420))
 
 
-sh.sendCommand('game')
+# sh.sendCommand('player')
 
-posX = array.array('H')
-posY = array.array('H')
+# posX = array.array('H')
+# posY = array.array('H')
 
-for i in range(0,50):
-  posX.append(i)
-  posY.append(i + 3)
+# for i in range(0,50):
+#   posX.append(i)
+#   posY.append(i + 3)
 
-buf = struct.pack('IHH50H50H', 4097 , 33, 1 ,*posX, *posY)
+# buf = struct.pack('IHHHH50H50H', 4097 , 33, 1 , 2 , 3,*posX, *posY)
 
-sh.sendStruct(buf)
+# sh.sendStruct(buf)
 
 
-while True:
-  pass
+# while True:
+#   pass
 
-sh.close()
+#sh.close()

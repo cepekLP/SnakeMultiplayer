@@ -1,6 +1,10 @@
-#pragma once
+#ifndef MESSAGE_H
+#define MESSAGE_H
+
+
+#include <stdint.h>
 #include "Statics.h"
-#define GAME_STRUCT_SIZE 2 * 2 * MAX_SNAKE_LENGTH + 4 + 2 + 2 + 2 + 2
+#define PLAYER_STRUCT_SIZE 2 * 2 * MAX_SNAKE_LENGTH + 4 + 2 + 2 + 2 + 2
 
 #define PING_STRUCT_SIZE 8
 
@@ -21,11 +25,13 @@ typedef struct __attribute__((__packed__)){
 //  2
 
 typedef struct __attribute__((__packed__)){
-    u_int32_t timestamp;
-    u_int16_t length;
-    u_int16_t direction;
-    u_int16_t points;
-    u_int16_t flags;
-    u_int16_t positionX[MAX_SNAKE_LENGTH];
-    u_int16_t positionY[MAX_SNAKE_LENGTH];   
+    uint32_t timestamp;
+    uint16_t length;
+    uint16_t direction;
+    uint16_t points;
+    uint16_t flags;
+    uint16_t positionX[MAX_SNAKE_LENGTH];
+    uint16_t positionY[MAX_SNAKE_LENGTH];   
 }player_state_t;
+
+#endif

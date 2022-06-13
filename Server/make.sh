@@ -1,1 +1,1 @@
-gcc server.c -lpthread -o server
+gcc server.c GameValidation.c GameHandler.c -lpthread -o server

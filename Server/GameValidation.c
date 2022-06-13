@@ -2,7 +2,7 @@
 
 void collision_check(player_state_t* player, player_state_t players[], game_state_t* game_state)
 {
-    if(player->flags & IS_ALIVE == IS_ALIVE)
+    if((player->flags & IS_ALIVE) == IS_ALIVE)
     {
         if(wall_hit(player) == 1)
         {
@@ -23,10 +23,10 @@ void collision_check(player_state_t* player, player_state_t players[], game_stat
 int wall_hit(player_state_t* player)
 {
     if( 
-        player->position[0].x + SNAKE_BLOCK_SIZE <= MAP_WIDHT &&
-        player->position[0].x >= 0 && 
-        player->position[0].y + SNAKE_BLOCK_SIZE <= MAP_HEIGHT &&
-        player->position[0].y >= 0 
+        player->positionX[0] + SNAKE_BLOCK_SIZE <= MAP_WIDTH &&
+        player->positionX[0] >= 0 && 
+        player->positionY[0] + SNAKE_BLOCK_SIZE <= MAP_HEIGHT &&
+        player->positionY[0] >= 0 
         )
     {
         return 0;
@@ -40,7 +40,7 @@ int self_collision(player_state_t* player)
 {
     for(int i = 1; i < player->length; i++)
     {
-        if(do_overlap((point_t){player->positionX[0], player->positionY[0]}, (point_t){player->positionX[i], player->positionY[i]))
+        if(do_overlap((point_t){player->positionX[0], player->positionY[0]}, (point_t){player->positionX[i], player->positionY[i]}))
         {
             return 1;
         }
@@ -63,11 +63,11 @@ int others_players_hit(player_state_t* player, player_state_t players[], int pla
 {
     for(int i = 0; i < players_nr; i++)
     {
-        if(players[i].flags & IS_ALIVE == IS_ALIVE && player != &players[i])
+        if((players[i].flags & IS_ALIVE) == IS_ALIVE && player != &players[i])
         {
             for(int j = 0 ;j < players[i].length; j++)
             {
-                if( do_overlap(player->position[0], players[i].position[j]) == 1)
+                if( do_overlap((point_t){player->positionX[0], player->positionY[0]}, (point_t){player->positionX[i], player->positionY[i]}) == 1)
                 {
                     return 1;
                 }
