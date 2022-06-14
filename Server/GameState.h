@@ -23,6 +23,7 @@ typedef struct{
     uint16_t active_players;
     int start_counter;
     player_state_t players[MAX_PLAYER_NUMBER];
+    point_t apple_position;
 }game_state_t;
 
 

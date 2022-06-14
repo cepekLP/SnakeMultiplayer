@@ -106,5 +106,12 @@ class SocketHandler:
         
         self.game.pass_snake(psArray)
 
+        appleX = self.socketh.recv(2)
+        appleX = int.from_bytes(appleX, "little")       
+        appleY = self.socketh.recv(2)
+        appleY = int.from_bytes(appleY, "little")       
+
+        self.game.pass_apple(Point(appleX, appleY))
+
     except:
       traceback.print_exc()
