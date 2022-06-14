@@ -3,12 +3,12 @@ import math
 
 
 class Snake:
-	def __init__(self, direction, position, color):
+	def __init__(self, direction, position, color, flags):
 		self.color = color
 		self.alive = True
 		self.direction = direction
 		self.position = position
-
+		self.flags = flags
 		self.body = []
 		for i in range(START_SNAKE_BLOCKS_NR):
 			self.body.append(Point(
@@ -34,6 +34,9 @@ class Snake:
 			self.position.x -= BLOCK_SIZE
 		if self.direction == Direction.Right:
 			self.position.x += BLOCK_SIZE
+		self.body.insert(0, Point(self.position.x, self.position.y))
+		self.body.pop()
+
 
 	def player_move(self):
 		new_direction = self.direction
