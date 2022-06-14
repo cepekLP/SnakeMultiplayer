@@ -8,28 +8,23 @@ class Game:
 	def __init__(self):
 
 		self.sh = SocketHandler()
-		self.sh.start()
+		#self.sh.game = self
+		self.sh.start(self)
 		self.timestamp = 0
+
+		self.player_snake_created = False
+		
 
 		self.player_snake = Snake(
 			random.choice(list(Direction)),
 			Point(
-				random.randrange(5 * BLOCK_SIZE, WINDOW_X - 6 * BLOCK_SIZE, BLOCK_SIZE),
-				random.randrange(5 * BLOCK_SIZE, WINDOW_Y - 6 * BLOCK_SIZE, BLOCK_SIZE)),
+				-10000,
+				-10000),
 			SNAKE_COLOR
 		)
-		self.snakes = [
-			Snake(
-				random.choice(list(Direction)), Point(
-					random.randrange(5 * BLOCK_SIZE, WINDOW_X - 6 * BLOCK_SIZE, BLOCK_SIZE),
-					random.randrange(5 * BLOCK_SIZE, WINDOW_Y - 6 * BLOCK_SIZE, BLOCK_SIZE)),
-				SNAKES_COLORS[0]),
-			Snake(
-				random.choice(list(Direction)),
-				Point(
-					random.randrange(5 * BLOCK_SIZE, WINDOW_X - 6 * BLOCK_SIZE, BLOCK_SIZE),
-					random.randrange(5 * BLOCK_SIZE, WINDOW_Y - 6 * BLOCK_SIZE, BLOCK_SIZE)),
-				SNAKES_COLORS[1])]
+		self.snakes = []
+		for _ in range(MAX_PLAYER_NUMBER):
+			self.snakes.append
 
 		pygame.display.set_caption("Snake Multiplayer")
 		self.game_window = pygame.display.set_mode((WINDOW_X, WINDOW_Y))
@@ -84,19 +79,6 @@ class Game:
 		pygame.display.update()
 
 	def collisions(self):
-		if self.player_snake.apple_collision(self.apple_position):
-			self.score += 10
-			self.apple_spawned = False
-		for snake in self.snakes:
-			if snake.apple_collision(self.apple_position):
-				self.apple_spawned = False
-
-		if not self.apple_spawned:
-			self.apple_position = Point(
-				random.randrange(0, WINDOW_X - APPLE_SIZE, BLOCK_SIZE),
-				random.randrange(0, WINDOW_Y - APPLE_SIZE, BLOCK_SIZE))
-		self.apple_spawned = True
-
 		self.player_snake.snake_collision(self.player_snake)
 		self.player_snake.wall_collision()
 		for snake in self.snakes:
@@ -121,16 +103,57 @@ class Game:
 		while True:
 			self.draw()
 			self.move()
-			self.fps.tick(FPS)
-			self.collisions()
+			#self.collisions()
+
+			#  !!! temporary!!!
+
+			if self.player_snake.apple_collision(self.apple_position):
+				self.score += 10
+				self.apple_spawned = False
+			for snake in self.snakes:
+				if snake.apple_collision(self.apple_position):
+					self.apple_spawned = False
+
+			if not self.apple_spawned:
+				self.apple_position = Point(
+					random.randrange(0, WINDOW_X - APPLE_SIZE, BLOCK_SIZE),
+					random.randrange(0, WINDOW_Y - APPLE_SIZE, BLOCK_SIZE))
+			self.apple_spawned = True
+
+			#  !!! temporary!!!
 
 			self.sh.sendCommand('player')
 			self.sh.sendStruct(self.pack_snake())
 			
 			if not self.player_snake.alive:
 				break
+			self.fps.tick(FPS)
 		self.game_over()
 	
+	def init_player(self, ps: PlayerState):
+		if not self.player_snake_created:
+			self.player_snake = Snake(
+				ps.direction,
+				Point(
+					ps.position_x[0],
+					ps.position_y[0]),
+				SNAKE_COLOR
+			)
+		self.player_snake_created = True
+
+	def pass_snake(self, psArray):
+		print(bin(psArray[0].flags))
+		if (psArray[0].flags & IS_ALIVE ) != IS_ALIVE:
+			self.player_snake.alive = False
+			print('asddddddddddddddd')
+		self.snakes.clear()
+		for snake in psArray[1:]:
+			print("Snake in game", snake.position_x[0], snake.position_y[0])
+			new_snake = Snake(snake.direction, Point(snake.position_x[0], snake.position_y[0]), SNAKES_COLORS[len(self.snakes)])
+			new_snake.body = [Point(snake.position_x[i], snake.position_y[i]) for i in range(snake.length)]
+			self.snakes.append(new_snake)
+
+
 	def pack_snake(self):
 		packed = PlayerState()
 		packed.timestamp = int(round(time.time() * 1000)) % 4000000000
@@ -141,8 +164,8 @@ class Game:
 		#x_list = [block.x for block in self.player_snake.body] + [0] * (MAX_SNAKE_LENGTH - len(self.player_snake.body))
 		#y_list = [block.y for block in self.player_snake.body] + [0] * (MAX_SNAKE_LENGTH - len(self.player_snake.body))
 
-		packed.position_x = array('H')
-		packed.position_y = array('H')
+		packed.position_x = array('h')
+		packed.position_y = array('h')
 
 		# for i in range(0, 50):
 		# 	if i < len(self.player_snake.body):
@@ -155,7 +178,7 @@ class Game:
 		# 		packed.position_y.append(self.player_snake.body[i].y)
 		# 	else:
 		# 		packed.position_y.append(0)
-
+		print(self.player_snake.body[0].y)
 		for i in range(50):
 			if i < len(self.player_snake.body):
 				packed.position_x.append(self.player_snake.body[i].x)

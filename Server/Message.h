@@ -30,8 +30,8 @@ typedef struct __attribute__((__packed__)){
     uint16_t direction;
     uint16_t points;
     uint16_t flags;
-    uint16_t positionX[MAX_SNAKE_LENGTH];
-    uint16_t positionY[MAX_SNAKE_LENGTH];   
+    int16_t positionX[MAX_SNAKE_LENGTH];
+    int16_t positionY[MAX_SNAKE_LENGTH];   
 }player_state_t;
 
 #endif

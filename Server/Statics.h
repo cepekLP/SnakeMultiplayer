@@ -4,6 +4,7 @@
 
 #define MAP_WIDTH 800
 #define MAP_HEIGHT 600
+#define SPAWN_MARGIN 15
 
 #define START_SNAKE_LENGTH 20
 #define MAX_SNAKE_LENGTH 50

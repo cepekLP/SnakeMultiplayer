@@ -22,11 +22,11 @@
 
 char* commands[] = 
 {
-	"initalize\0",
 	"status\0",
 	"pingcrc\0",
 	"game\0",
-	"player\0"
+	"player\0",
+	"init\0"
 };
 
 game_state_t game_state ={PLAYER_NUMBER, 0, -1};
@@ -57,13 +57,15 @@ void* connection_handler(void *socket_desc)
 	ping_crc_t* ping_struct = malloc(sizeof(ping_crc_t));
 	player_state_t* ps = malloc(sizeof(player_state_t));
 
-	//sem_wait(&general_mutex);
+	sem_wait(&gs_mutex);
 	int player_number = game_state.active_players;
 	// inicjalizacja gracza
-	//init_player(&game_state);
-	//sem_post(&general_mutex);
+	send_command(sock, "init\0");
+	init_player(&game_state);
+	sem_post(&gs_mutex);
+	printf("Player %d initialized\n", &player_number);
 	// przeslanie informacji o polozeniu weza do gracza
-	//write(sock, &game_state.players[player_number], PLAYER_STRUCT_SIZE);
+	write(sock, &game_state.players[player_number], PLAYER_STRUCT_SIZE);
 
 	do {
 
@@ -80,7 +82,7 @@ void* connection_handler(void *socket_desc)
 		printf("\n[ %d -> %s -> %ld]\n", read_size, client_message, strlen(client_message));
 		//printf("CMP %d\n", strcmp(client_message, commands[0]));
 
-		// po co to jest???
+		// po co to jest???s
 		if(strcmp(client_message, commands[0]) == 0)
 		{
 			printf("[Await status message]\n");
@@ -113,6 +115,11 @@ void* connection_handler(void *socket_desc)
 			write(sock, &game_state.active_players, sizeof(game_state.active_players));
 			int active_players = game_state.active_players;
 			sem_post(&gs_mutex);
+
+			sem_wait(&mutex[player_number]);			
+			write(sock, &game_state.players[player_number], PLAYER_STRUCT_SIZE);
+			sem_post(&mutex[player_number]);
+
 			// przeslanie informacji o pozostalych graczach
 			for (int i = 0 ; i < active_players; i++)
 			{
@@ -127,8 +134,32 @@ void* connection_handler(void *socket_desc)
 
 		if(strcmp(client_message, commands[3]) == 0)
 		{
-			read_size = recv(sock, ps, PLAYER_STRUCT_SIZE, 0);
-			printf("CL: %d %u %d %d\n", clientTid, ps->timestamp,  ps->positionX[0], ps->positionY[0]);
+			sem_wait(&mutex[player_number]);
+			read_size = recv(sock, &game_state.players[player_number], PLAYER_STRUCT_SIZE, 0);
+			sem_post(&mutex[player_number]);
+			printf("CL: %d %u %d %d\n", clientTid, game_state.players[player_number].timestamp,  game_state.players[player_number].positionX[0], game_state.players[player_number].positionY[0]);
+			
+			send_command(sock, "game\0");
+			sem_wait(&gs_mutex);
+			write(sock, &game_state.active_players, sizeof(game_state.active_players));
+			int active_players = game_state.active_players;
+			sem_post(&gs_mutex);
+
+			sem_wait(&mutex[player_number]);	
+			write(sock, &game_state.players[player_number], PLAYER_STRUCT_SIZE);
+			printf("%d", &game_state.players[player_number].flags);
+			sem_post(&mutex[player_number]);
+
+			for (int i = 0 ; i < active_players; i++)
+			{
+				if(i != player_number)
+				{
+					sem_wait(&mutex[i]);
+					write(sock, &game_state.players[i], PLAYER_STRUCT_SIZE);
+					sem_post(&mutex[i]);
+				}
+			}				
+
 		}
 		
 		/* Clear the message buffer */
@@ -162,7 +193,11 @@ int main(int argc, char *argv[]) {
 	listen(listenfd, 10); 
 
 	printf("Server started...\n");
-
+	sem_init(&gs_mutex, 0, 1);
+	for(int i =0; i<game_state.player_number;i++)
+	{
+		sem_init(&mutex[i], 0, 1);
+	}
 	game_handler_struct_t game_handler_struct = {&game_state, &gs_mutex};
 	pthread_create(&thread_id, NULL, game_handler, (void *) &game_handler_struct);
 
